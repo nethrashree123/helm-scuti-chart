@@ -1,0 +1,85 @@
+# Default values for mychart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Default values for mychart.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+# API container settings
+api:
+  image:
+    repository: prefecthq/prefect
+    tag: 2.11.3-python3.11
+    pullPolicy: IfNotPresent
+  env:
+    PREFECT_ORION_DATABASE_CONNECTION_URL: "postgresql+asyncpg://scutiuser:Prefect_12345@scutiprefectdb.postgres.database.azure.com:5432/orion"
+    PREFECT_API_URL: "http://20.121.152.69:4200/api"
+    
+  command: ["/bin/sh", "-c"]
+  args: ["pip install adlfs && pip install azure.storage.blob && pip install azure.storage.file-share && prefect orion start --host 0.0.0.0 --log-level WARNING"]
+
+# Agent container settings
+agent:
+  image:
+    repository: prefecthq/prefect
+    tag: 2.11.3-python3.11
+    pullPolicy: IfNotPresent
+  env:
+    PREFECT_API_URL: "http://20.121.152.69:4200/api"
+  command: ["/bin/sh", "-c"]
+  args: ["pip install adlfs &&  pip install azure.storage.blob && pip install azure.storage.file-share && prefect agent start --work-queue default"]
+  
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 500Mi
+
+# Service settings
+service:
+  name: test-prefect-orion-service
+  type: ClusterIP
+  port: 4200
+  protocol: TCP
+  
+# Ingress settings
+ingress:
+  name: prefect-ingress
+  annotations:
+    ingressClass: nginx
+    rewriteTarget: /
+    sslRedirect: "true"
+  path: /
+  pathType: Prefix
+  
+
+# Secret settings
+secret:
+  name: scutisecret
+  annotations:
+    serviceAccountName: scutiuser
+ 
+#Horizontal pod autoscaling settings 
+hpa:
+  name: test-prefect-agent-hpa
+  minReplicas: 1
+  maxReplicas: 5
+  cpuUtilization: 70 # This means the HPA will scale up when average CPU utilization reaches 70%
+  memoryUtilization: 70 # This means the HPA will scale up when average Memory utilization reaches 70%
+
+
+namespace: hpa
+appName: test-prefect-agent
+
+# RoleBinding settings
+roleBinding:
+  name: prefect-agent-role-binding
+
+
+
+
+

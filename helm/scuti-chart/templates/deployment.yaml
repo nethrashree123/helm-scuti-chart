@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.appName }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+    spec:
+      containers:
+      - name: api
+        image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+        imagePullPolicy: "{{ .Values.api.image.pullPolicy }}"
+        env:
+        - name: PREFECT_ORION_DATABASE_CONNECTION_URL
+          value: "{{ .Values.api.env.PREFECT_ORION_DATABASE_CONNECTION_URL }}"
+        - name: PREFECT_API_URL
+          value: "{{ .Values.api.env.PREFECT_API_URL }}"
+        command: {{ .Values.api.command }}
+        args: {{ .Values.api.args }}
+        ports:
+        - containerPort: 4200
+        resources:
+          limits:
+            cpu: {{ .Values.resources.limits.cpu }}
+            memory: {{ .Values.resources.limits.memory }}
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+          
+      - name: agent
+        image: "{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}"
+        imagePullPolicy: "{{ .Values.agent.image.pullPolicy }}"
+        env:
+        - name: PREFECT_API_URL
+          value: "{{ .Values.agent.env.PREFECT_API_URL }}"
+        command: {{ .Values.agent.command }}
+        args: {{ .Values.agent.args }}
+        resources:
+          limits:
+            cpu: {{ .Values.resources.limits.cpu }}
+            memory: {{ .Values.resources.limits.memory }}
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}

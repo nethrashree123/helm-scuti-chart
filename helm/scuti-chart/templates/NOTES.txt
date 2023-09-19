@@ -1,0 +1,21 @@
+Thank you for installing the Prefect Agent!
+
+1. **Accessing the Prefect API:**
+
+Your Prefect API is accessible within the cluster 
+
+
+If you've set up the Ingress controller, you can access the Prefect API externally using the Ingress endpoint. You might need to set up appropriate DNS or hosts file entries if you haven't configured a domain for the ingress.
+
+To find the Ingress IP or Hostname:
+```bash
+kubectl get ingress {{ .Values.ingress.name }} -n {{ .Values.namespace }}
+
+Remember to ensure that metrics-server is running in your cluster if you're using the Horizontal Pod Autoscaler.
+
+
+2. RBAC Role and RoleBinding:
+- Role: {{ .Values.appName }}
+- RoleBinding: {{ .Values.roleBinding.name }}
+
+Thank you for deploying the {{ .Chart.Name }} !
